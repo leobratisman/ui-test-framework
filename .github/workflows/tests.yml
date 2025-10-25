@@ -1,0 +1,81 @@
+name: UI tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+
+      - name: Install dependencies
+        run: |
+          poetry install --no-root
+          poetry run playwright install --with-deps
+
+      - name: Run UI tests with pytest and generate Allure results
+        env:
+          TEST_USER.EMAIL: user@example.ru
+          TEST_USER.USERNAME: username
+          TEST_USER.PASSWORD: password
+          TEST_DATA.IMAGE_PNG_FILE: ./testdata/image.png
+          HEADLESS: True
+          BROWSERS: "webkit,firefox"
+        run: |
+          poetry run pytest qa --alluredir=./allure-results --numprocesses 2
+
+      - name: "Upload allure results"
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: allure-results
+          retention-days: 1
+
+  publish-report:
+    if: always()
+    needs: [run-tests]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Download Allure results
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-results
+          path: allure-results
+
+      - name: Generate Allure Report with history
+        uses: simple-elf/allure-report-action@v1.12
+        if: always()
+        with:
+          allure_results: allure-results
+          allure_history: allure-history
+
+      - name: Deploy report to Github Pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-history
