@@ -38,7 +38,7 @@ jobs:
           HEADLESS: True
           BROWSERS: "webkit,firefox"
         run: |
-          poetry run pytest qa --alluredir=./allure-results --numprocesses 2
+          poetry run pytest --alluredir=./allure-results --numprocesses 2
 
       - name: "Upload allure results"
         uses: actions/upload-artifact@v4
