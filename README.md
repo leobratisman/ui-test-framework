@@ -47,6 +47,6 @@ BROWSERS="webkit,chromium"
 ## Run UI-tests
 
 ```shell
-# --numprocesses launchs tests in parallel in 2 processes
+# --numprocesses launchs tests in parallel (2 processes)
 poetry run pytest --numprocesses 2
 ```
