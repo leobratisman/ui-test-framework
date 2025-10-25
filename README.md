@@ -1,4 +1,4 @@
-# Test framework (UI)
+# Test framework (UI) | Playwright
 
 ## Install Poetry
 
